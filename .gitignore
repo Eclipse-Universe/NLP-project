@@ -1,0 +1,41 @@
+# 모델 가중치 (수십 GB)
+outputs/checkpoints*/
+outputs/logs*/
+*.safetensors
+*.bin
+*.pt
+*.pth
+
+# 예측 결과 (재생성 가능)
+outputs/predictions/
+
+# 데이터 (대회 원본, 공유 금지)
+data/
+
+# wandb
+wandb/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+
+# 환경
+.env
+
+# 서버 시스템 파일
+.bash_history
+.bashrc
+.profile
+.bash_logout
+.wget-hsts
+.ssh/
+.cache/
+.dotnet/
+.vscode-server/
+.claude/
+init-scripts/
+ssh-key/
+baseline\ code/
+starlight-time-machine/

@@ -1,0 +1,66 @@
+general:
+  data_path: /root/data
+  train_file: train.csv
+  val_file: dev.csv
+  model_name: Qwen/Qwen2.5-14B-Instruct
+  output_dir: /root/outputs/checkpoints_qwen14b
+  result_path: /root/outputs/predictions
+
+wandb:
+  entity: dopago2000-
+  project: dialogue-summarization
+  name: qwen2.5-14b-qlora
+
+use_4bit: true                         # 4-bit NF4 QLoRA (RTX3090 24GB 대응)
+
+lora:
+  r: 32
+  lora_alpha: 64
+  lora_dropout: 0.05
+  bias: none
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+
+tokenizer:
+  max_length: 768                      # 99%ile=611토큰 기준, OOM 방지 (1024→768)
+
+rouge_eval_samples: 100                # OOM 방지 위해 499→100 (greedy 콜백)
+
+training:
+  num_train_epochs: 3
+  learning_rate: 2.0e-4
+  per_device_train_batch_size: 1       # 14B 메모리 절감
+  per_device_eval_batch_size: 1
+  gradient_accumulation_steps: 16      # effective batch = 1×16 = 16 (v3와 동일)
+  warmup_ratio: 0.05
+  weight_decay: 0.01
+  lr_scheduler_type: cosine
+  optim: paged_adamw_8bit              # QLoRA 권장 옵티마이저
+  evaluation_strategy: epoch
+  save_strategy: epoch
+  save_total_limit: 3
+  bf16: true
+  load_best_model_at_end: false
+  seed: 42
+  logging_dir: /root/outputs/logs_qwen14b
+  logging_strategy: steps
+  logging_steps: 50
+  gradient_checkpointing: true
+
+inference:
+  checkpoint_path: ""
+  max_new_tokens: 100
+  min_new_tokens: 0
+  num_beams: 4
+  length_penalty: 0.7
+  do_sample: false
+  temperature: 1.0
+  no_repeat_ngram_size: 0
+
+system_prompt: "당신은 대화 요약 전문가입니다. 주어진 대화를 읽고 핵심 내용을 간결하게 요약하세요. #Person1#, #Person2# 등의 형식으로 화자를 표기하세요."

@@ -1,0 +1,63 @@
+general:
+  data_path: /root/data
+  train_file: train.csv            # dev 제외 (leakage 방지), 원래 train만 사용
+  val_file: dev.csv                # 온전한 dev 499건
+  model_name: Qwen/Qwen2.5-7B-Instruct
+  output_dir: /root/outputs/checkpoints_qwen_v6
+  result_path: /root/outputs/predictions
+
+wandb:
+  entity: dopago2000-
+  project: dialogue-summarization
+  name: qwen2.5-7b-lora-v6
+
+lora:
+  r: 32
+  lora_alpha: 64
+  lora_dropout: 0.05
+  bias: none
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+
+tokenizer:
+  max_length: 1024
+
+rouge_eval_samples: 50            # beam 평가는 greedy보다 느려서 100건으로 제한
+
+training:
+  num_train_epochs: 3
+  learning_rate: 2.0e-4
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
+  gradient_accumulation_steps: 8
+  warmup_ratio: 0.05
+  weight_decay: 0.01
+  lr_scheduler_type: cosine
+  optim: adamw_torch
+  evaluation_strategy: epoch
+  save_strategy: epoch
+  save_total_limit: 3
+  bf16: true
+  load_best_model_at_end: false
+  seed: 42
+  logging_dir: /root/outputs/logs_qwen_v6
+  logging_strategy: steps
+  logging_steps: 50
+  gradient_checkpointing: true
+
+inference:
+  checkpoint_path: ""
+  max_new_tokens: 100
+  min_new_tokens: 25               # 너무 짧은 요약 방지 (참조 avg ~40토큰)
+  num_beams: 4
+  length_penalty: 0.7
+  do_sample: false
+  temperature: 1.0
+
+system_prompt: "당신은 대화 요약 전문가입니다. 주어진 대화를 읽고 핵심 내용을 간결하게 요약하세요. #Person1#, #Person2# 등의 형식으로 화자를 표기하세요."

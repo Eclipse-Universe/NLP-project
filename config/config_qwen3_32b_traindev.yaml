@@ -1,0 +1,66 @@
+general:
+  data_path: /root/data
+  train_file: traindev.csv             # train + dev 통합
+  val_file: train.csv                  # ROUGE 모니터링용
+  model_name: Qwen/Qwen3-32B
+  output_dir: /root/outputs/checkpoints_qwen3_32b_traindev
+  result_path: /root/outputs/predictions
+
+wandb:
+  entity: dopago2000-
+  project: dialogue-summarization
+  name: qwen3-32b-qlora-traindev
+
+use_4bit: true
+
+lora:
+  r: 32
+  lora_alpha: 64
+  lora_dropout: 0.05
+  bias: none
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+
+tokenizer:
+  max_length: 768
+
+rouge_eval_samples: 100
+
+training:
+  num_train_epochs: 2                  # epoch2 = 항상 sweet spot
+  learning_rate: 2.0e-4
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 1
+  gradient_accumulation_steps: 16
+  warmup_ratio: 0.05
+  weight_decay: 0.01
+  lr_scheduler_type: cosine
+  optim: paged_adamw_8bit
+  evaluation_strategy: epoch
+  save_strategy: epoch
+  save_total_limit: 2
+  bf16: true
+  load_best_model_at_end: false
+  seed: 42
+  logging_dir: /root/outputs/logs_qwen3_32b_traindev
+  logging_strategy: steps
+  logging_steps: 50
+  gradient_checkpointing: true
+
+inference:
+  checkpoint_path: ""
+  max_new_tokens: 100
+  min_new_tokens: 0
+  num_beams: 4
+  length_penalty: 0.7
+  do_sample: false
+  temperature: 1.0
+  no_repeat_ngram_size: 0
+
+system_prompt: "당신은 대화 요약 전문가입니다. 주어진 대화를 읽고 핵심 내용을 간결하게 요약하세요. #Person1#, #Person2# 등의 형식으로 화자를 표기하세요."
